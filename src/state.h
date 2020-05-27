@@ -70,7 +70,7 @@ typedef struct {
 state *state_new();
 
 // Updates the state of the game to the next frame.
-void state_update(level *lvl, state *sta);
+void state_update(level *lvl, state *sta, int *score);
 
 // Put enemies at random in the state until it has n_enemies enemies.
 void state_populate_random(level *lvl, state *sta, int n_enemies);
@@ -78,6 +78,11 @@ void state_populate_random(level *lvl, state *sta, int n_enemies);
 // Deletes a state and the memory it requires.
 void state_free(state *sta);
 
+// Get highscore value
+int get_highscore();
+
+// Change highscore value if the last score is higher than actual highscore
+void change_highscore(int *score);
 
 
 #endif

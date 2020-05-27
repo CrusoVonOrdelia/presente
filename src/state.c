@@ -24,7 +24,7 @@ state *state_new(){
     return sta;
 }
 
-void state_update(level *lvl, state *sta){
+void state_update(level *lvl, state *sta, int *score){
 
     // == Update player speed according to buttons
     // (mov_x,mov_y) is a vector that represents the position of the analog control
@@ -71,7 +71,6 @@ void state_update(level *lvl, state *sta){
             new_bullet->ent.hp     = BULLET_DMG;
         }
     }
-
     // == Check bullet-enemy collisions
     for(int i=0;i<sta->n_bullets;i++){
         for(int k=0;k<sta->n_enemies;k++){
@@ -91,9 +90,16 @@ void state_update(level *lvl, state *sta){
     // Update enemies
     for(int i=0;i<sta->n_enemies;i++){
         entity_physics(lvl,&sta->enemies[i].ent);
-        // Kill enemy if it has less than 0 HP
-        if(sta->enemies[i].ent.hp<=0) sta->enemies[i].ent.dead = 1;
-    }
+        // Kill enemy if it has less than 0 HP 
+	// We add the points
+        if(sta->enemies[i].ent.hp<=0){ sta->enemies[i].ent.dead = 1;
+        if(sta->enemies[i].kind == MINION){  // each minion kill grants 1 point
+            *score+=1;
+        }
+        else if(sta->enemies[i].kind == BRUTE){  // each brute kill grants 4 points
+            *score+=4;
+        }
+    }}
     // Update bullets
     for(int i=0;i<sta->n_bullets;i++){
         int col = entity_physics(lvl,&sta->bullets[i].ent);
@@ -167,6 +173,30 @@ void state_populate_random(level *lvl, state *sta, int n_enemies){
             }
         }
     }
+}
+
+int get_highscore(){ 
+    FILE *arch;
+    int highscore;
+    arch = fopen("resource/highscore.txt", "r");
+    if (fscanf(arch, "%d", &highscore) != EOF){
+        fclose(arch);
+        return highscore;
+    }
+    else{
+        fclose(arch);
+        return 0;
+    }
+}
+
+void change_highscore(int *score){ 
+    FILE *arch;
+    int highscore = get_highscore();
+    arch = fopen("resource/highscore.txt", "w");
+    if(*score > highscore){
+        fprintf(arch, "%d", *score);
+    }
+    fclose(arch);
 }
 
 void state_free(state *sta){
